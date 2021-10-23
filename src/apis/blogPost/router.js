@@ -12,82 +12,6 @@ const upload = multer();
 
 const blogPostRouter = express.Router();
 
-// To post a new blog post
-blogPostRouter.post("/",  async (req, res, next) => {
-    try {
-        console.log(req.body)
-      const errorList = validationResult(req);
-      let { name, avatar, value, unit, title, category } = req.body
-      const author = {name, avatar}
-      const readTime = {value, unit}
-      title = title
-      category = category
-  
-      if (!errorList.isEmpty()) {
-        next(createHttpError(400, { errorList }));
-      } else {
-          
-          const newPost = {
-            ...req.body,
-          category,
-          title,
-          cover: ``,
-          readTime,
-          author,
-          comments: [],
-          createdAt: new Date(),
-          id: uniqid(),
-        };
-        const blogPost = await db.getBlogs();
-        blogPost.push(newPost);
-  
-        // await db.savePostImg(req.file.originalname, req.file.buffer);
-        await db.writeBlogs(blogPost);
-  
-        res.status(203).send(newPost);
-      }
-    } catch (error) {
-      next(error);
-    }
-  });
-
- // post picture to blog post 
-blogPostRouter.post("/:id/uploadSingle", upload.single("picture"), async (req, res, next) => {
-  try {
-    const errorList = validationResult(req);
-
-    if (!errorList.isEmpty()) {
-      next(createHttpError(400, { errorList }));
-    } else {
-        let { name, avatar, value, unit, title, category } = req.body
-        const author = {name, avatar}
-        const readTime = {value, unit}
-        title = title
-        category = category
-
-
-      const picture = `http://localhost:3001/img/post/${req.file.originalname}`;
-      let newPicture = {
-            category,
-            title,
-            cover: picture,
-            readTime,
-            author,
-            comments: [],
-            createdAt: new Date(),
-        id: uniqid(),
-      };
-
-      await db.savePostImg(req.file.originalname, req.file.buffer);
-      const posts = await db.makeBlogPost(newPicture);
-
-      res.status(201).send(posts);
-    }
-  } catch (error) {
-    next(error);
-  }
-});
-
 // To get all blog posts
 blogPostRouter.get("/", async (req, res, next) => {
   try {
@@ -110,11 +34,109 @@ blogPostRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-// To update a single comment with id
-blogPostRouter.put("/:id/comment", async(req, res, next) => {
+// Get all comments 
+blogPostRouter.get("/:id/comments", async (req, res, next) => {
+  try {
+    const posts = await db.getBlogs()
+    console.log(`i am the posts`,posts)
+
+    const singlePost = posts.find(post => post.id === req.params.id)
+    console.log(`i'm the single post`,singlePost)
+    
+    res.send(singlePost.comments)
+  } catch (error) {
+    next(error);
+  }
+})
+
+
+
+// To post a new blog post
+blogPostRouter.post("/",  async (req, res, next) => {
     try {
-       const blogComments = await db.getCommentsById(req.params.id)
-       res.send(blogComments)
+        console.log(req.body)
+      const errorList = validationResult(req);
+
+      if (!errorList.isEmpty()) {
+        next(createHttpError(400, { errorList }));
+      } else {
+          
+          const newPost = {
+            id: uniqid(),
+            ...req.body,
+          createdAt: new Date(),
+        };
+        const blogPost = await db.getBlogs();
+        blogPost.push(newPost);
+  
+        await db.writeBlogs(blogPost);
+  
+        res.status(203).send(newPost);
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
+ // post picture to blog post 
+
+ blogPostRouter.post(
+  "/:id/cover",
+  multer().single("cover"),
+  async (req, res, next) => {
+    try {
+      const extention = path.extname(req.file.originalname);
+      const fıleName = req.params.id + extention;
+    
+      if (req.file) {
+        await db.savePostImg(fıleName, req.file.buffer);
+
+        const converUrl = `http://localhost:3001/img/post/${req.params.id}${extention}`;
+
+        const posts = await db.getBlogs();
+
+        const post = posts.find((p) => p.id === req.params.id);
+
+        post.cover = converUrl;
+      
+
+        const postArray = posts.filter((p) => p.id !== req.params.id);
+
+        postArray.push(post);
+
+        await db.writeBlogs(postArray);
+        res.send(post);
+      } else {
+        console.log(req.file.buffer);
+      }
+    } catch (error) {
+      console.log(req.file);
+      next(error);
+    }
+  }
+);
+
+
+// To update a single comment with id
+blogPostRouter.put("/:postId/comments/:commentId", async(req, res, next) => {
+    try {
+      const posts = await db.getBlogs()
+      console.log(`i am the posts`,posts)
+  
+      const singlePost = posts.find(p => p.id === req.params.postId)
+      const index = posts.findIndex(p => p.id === req.params.postId)
+      const indexComment = singlePost.comments.findIndex(c => c.id === req.params.commentId)
+      posts[index].comments[indexComment] = {
+        ...posts[index].comments[indexComment],
+        ...req.body,
+        updatedAt: new Date()       
+      }
+
+      await db.writeBlogs(posts)
+
+      console.log(`i'm the single post`,singlePost)
+      
+      res.send(posts[index].comments[indexComment])
     } catch (error) {
         console.log(error)
         next(error);
@@ -141,46 +163,7 @@ blogPostRouter.delete("/:id/comment", async(req, res, next) => {
     }
 })
 
-// To update a blog post
-blogPostRouter.put("/:Id", upload.single("picture"), async (req, res, next) => {
-    try {
-      const errorList = validationResult(req);
-  
-      if (!errorList.isEmpty()) {
-        next(createHttpError(404, { errorList }));
-      } else {
-        let { name, avatar, value, unit, title, category } = req.body
-        const author = {name, avatar}
-        const readTime = {value, unit}
-        title = title
-        category = category
 
-        const blogs = await db.getBlogs();
-        const index = blogs.findIndex((blog) => blog.id === req.params.Id);
-
-        const picture = `http://localhost:3001/img/post/${req.file.originalname}`;
-
-        const editedPost = {
-            category,
-            title,
-            cover: picture,
-            readTime,
-            author,
-            comments: [],
-          updatedAt: new Date(),
-          id: req.params.Id,
-        };
-        blogs[index] = editedPost;
-
-        await db.savePostImg(req.file.originalname, req.file.buffer);
-  
-        await db.writeBlogs(blogs);
-        res.send(editedPost);
-      }
-    } catch (error) {
-      next(error);
-    }
-  });
 
 // post comment in blog POST
   blogPostRouter.post(
@@ -240,37 +223,6 @@ blogPostRouter.put("/:Id", upload.single("picture"), async (req, res, next) => {
   );
 
 
-  blogPostRouter.put(
-    "/:blogId/cover",
-    multer().single("picture"),
-  
-    async (req, res, next) => {
-      try {
-        const blogs = await db.getBlogs();
-  
-        const index = blogs.findIndex((blog) => blog.id === req.params.blogId);
-  
-        const extention = path.extname(req.file.originalname);
-  
-        await db.savePostImg(req.params.blogId + extention, req.file.buffer);
-  
-        const coverUrl = `http://localhost:3001/img/post/${req.params.blogId}${extention}`;
-  
-        const editedPost = {
-          ...blogs[index],
-          cover: coverUrl,
-          updatedAt: new Date(),
-          id: req.params.blogId,
-        };
-  
-        blogs[index] = editedPost;
-  
-        await db.writeBlogs(blogs);
-        res.send(editedPost);
-      } catch (error) {
-        next(error);
-      }
-    }
-  );
+
 
 export default blogPostRouter;
