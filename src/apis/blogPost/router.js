@@ -5,7 +5,6 @@ import { blogsValidation } from "./validation.js";
 import { body, validationResult } from "express-validator";
 import * as db from "../../lib/db.js";
 import path from "path";
-import fs from "fs-extra";
 import multer from "multer";
 
 const upload = multer();
@@ -59,8 +58,7 @@ blogPostRouter.post("/",  async (req, res, next) => {
 
       if (!errorList.isEmpty()) {
         next(createHttpError(400, { errorList }));
-      } else {
-          
+      } else {         
           const newPost = {
             id: uniqid(),
             ...req.body,
@@ -70,7 +68,6 @@ blogPostRouter.post("/",  async (req, res, next) => {
         blogPost.push(newPost);
   
         await db.writeBlogs(blogPost);
-  
         res.status(203).send(newPost);
       }
     } catch (error) {
@@ -78,11 +75,10 @@ blogPostRouter.post("/",  async (req, res, next) => {
     }
   });
 
- // post picture to blog post 
-
+ // Post cover to blog post 
  blogPostRouter.post(
   "/:id/cover",
-  multer().single("cover"),
+  upload.single("cover"),
   async (req, res, next) => {
     try {
       const extention = path.extname(req.file.originalname);
@@ -90,17 +86,15 @@ blogPostRouter.post("/",  async (req, res, next) => {
     
       if (req.file) {
         await db.savePostImg(fıleName, req.file.buffer);
-
-        const converUrl = `http://localhost:3001/img/post/${req.params.id}${extention}`;
-
+        
         const posts = await db.getBlogs();
-
+        
         const post = posts.find((p) => p.id === req.params.id);
-
+        const postArray = posts.filter((p) => p.id !== req.params.id);
+        
+        const converUrl = `http://localhost:3001/img/post/${req.params.id}${extention}`;
         post.cover = converUrl;
       
-
-        const postArray = posts.filter((p) => p.id !== req.params.id);
 
         postArray.push(post);
 
@@ -117,55 +111,7 @@ blogPostRouter.post("/",  async (req, res, next) => {
 );
 
 
-// To update a single comment with id
-blogPostRouter.put("/:postId/comments/:commentId", async(req, res, next) => {
-    try {
-      const posts = await db.getBlogs()
-      console.log(`i am the posts`,posts)
-  
-      const singlePost = posts.find(p => p.id === req.params.postId)
-      const index = posts.findIndex(p => p.id === req.params.postId)
-      const indexComment = singlePost.comments.findIndex(c => c.id === req.params.commentId)
-      posts[index].comments[indexComment] = {
-        ...posts[index].comments[indexComment],
-        ...req.body,
-        updatedAt: new Date()       
-      }
-
-      await db.writeBlogs(posts)
-
-      console.log(`i'm the single post`,singlePost)
-      
-      res.send(posts[index].comments[indexComment])
-    } catch (error) {
-        console.log(error)
-        next(error);
-    }
-})
-
-// To delete a blog post
-blogPostRouter.delete("/:id", async (req, res, next) => {
-  try {
-    await db.deleteBlog(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
-blogPostRouter.delete("/:id/comment", async(req, res, next) => {
-    try {
-        await db.deleteBlogComment()
-        res.status(208).send()
-    } catch (error) {
-        next(error);
-    }
-})
-
-
-
-// post comment in blog POST
+// post comment in blog 
   blogPostRouter.post(
     "/:blogId/comment",
   
@@ -193,34 +139,44 @@ blogPostRouter.delete("/:id/comment", async(req, res, next) => {
       }
     }
   );
-// Update comment
-  blogPostRouter.put(
-    "/:blogId/comments",
-  
-    async (req, res, next) => {
-      try {
-        const { text, userName } = req.body;
-  
-        const comment = { id: uniqid(), text, userName, createdAt: new Date() };
-  
-        const blogs = await db.getBlogs();
-  
-        const index = blogs.findIndex((blog) => blog.id === req.params.blogId);
-  
-        blogs[index].comments = blogs[index].comments || [];
-  
-        const editedPost = blogs[index];
-        editedPost.comments.push(comment);
-  
-        blogs[index] = editedPost;
-  
-        await db.writeBlogs(blogs);
-        res.send(editedPost);
-      } catch (error) {
-        next(error);
-      }
+
+// To update a single comment with id
+blogPostRouter.put("/:postId/comments/:commentId", async(req, res, next) => {
+  try {
+    const posts = await db.getBlogs()
+    console.log(`i am the posts`,posts)
+
+    const singlePost = posts.find(p => p.id === req.params.postId)
+    const index = posts.findIndex(p => p.id === req.params.postId)
+    const indexComment = singlePost.comments.findIndex(c => c.id === req.params.commentId)
+    posts[index].comments[indexComment] = {
+      ...posts[index].comments[indexComment],
+      ...req.body,
+      updatedAt: new Date()       
     }
-  );
+
+    await db.writeBlogs(posts)
+
+    console.log(`i'm the single post`,singlePost)
+    
+    res.send(posts[index].comments[indexComment])
+  } catch (error) {
+      console.log(error)
+      next(error);
+  }
+})
+
+
+  // To delete blog post
+blogPostRouter.delete("/:id", async (req, res, next) => {
+  try {
+    await db.deleteBlog(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 
 
