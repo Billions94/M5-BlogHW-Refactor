@@ -109,7 +109,7 @@ async (req, res, next) => {
 // *******************************COMMENTS SECTION *****************************
 // post comment in blog 
 blogPostRouter.post(
-  "/:blogId/comment",
+  "/:blogId/comments",
 
   async (req, res, next) => {
     try {
