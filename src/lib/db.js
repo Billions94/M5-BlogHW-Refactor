@@ -13,10 +13,14 @@ console.log(publicFolderPath)
 
 
 const blogsJSONPath = join(dataFolderPath, 'post.json')
+const authorJSONPath = join(dataFolderPath, 'authors.json')
 console.log(blogsJSONPath)
 
 export const getBlogs = () => readJSON(blogsJSONPath)
 export const writeBlogs = content => writeJSON(blogsJSONPath, content)
+
+export const getAuthors = () => readJSON(authorJSONPath)
+export const writeAuthors = content => writeJSON(authorJSONPath, content)
 
 export const savePostImg = (fileName, contentAsBuffer) => writeFile(join(publicFolderPath, fileName), contentAsBuffer)
 
@@ -36,6 +40,23 @@ export const getBlogById = async(id) => {
         }     
     } catch (error) {
         throw new Error(`blog with ${id} is not found!`);   
+    }
+}
+
+export const getAuthorById = async(id) => {
+    try {
+        // read the blog array
+        const authors = await getAuthors();
+        // find a blog by id
+        const author = authors.find((a) => a.id === id);
+        if(author){
+            console.log({author});
+            return author;
+        } else {
+            throw new Error(`author with ${id} is not found!`);   
+        }     
+    } catch (error) {
+        throw new Error(`author with ${id} is not found!`);   
     }
 }
 
