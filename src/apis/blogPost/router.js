@@ -119,7 +119,7 @@ blogPostRouter.post(
 
       const blogs = await db.getBlogs();
 
-      const index = blogs.findIndex((blog) => blog.id === req.params.blogId);
+      const index = blogs.findIndex(b => b.id === req.params.blogId);
 
       blogs[index].comments = blogs[index].comments || [];
 
@@ -142,7 +142,7 @@ blogPostRouter.get("/:id/comments", async (req, res, next) => {
     const posts = await db.getBlogs()
     console.log(`i am the posts`,posts)
 
-    const singlePost = posts.find(post => post.id === req.params.id)
+    const singlePost = posts.find(p => p.id === req.params.id)
     console.log(`i'm the single post`,singlePost)
     
     res.send(singlePost.comments)
