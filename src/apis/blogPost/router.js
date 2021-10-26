@@ -81,10 +81,12 @@ async (req, res, next) => {
       const posts = await db.getBlogs();
       
       const post = posts.find((p) => p.id === req.params.id);
+      const img = req.file.path
+      post.cover = img;
+
       const postArray = posts.filter((p) => p.id !== req.params.id);
       
       
-      post.cover = req.file.path;
     
 
       postArray.push(post);
