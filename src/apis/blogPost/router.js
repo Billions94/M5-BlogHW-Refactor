@@ -14,6 +14,13 @@ const upload = multer();
 
 const blogPostRouter = express.Router();
 
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary, // CREDENTIALS, this line of code is going to search in your process.env for something called CLOUDINARY_URL
+  params: {
+    folder: "alex-blogs",
+  },
+})
+
 // ******************************BLOG SECTION WITH IMAGE UPLOAD*********************
 // To get all blog posts
 blogPostRouter.get("/", async (req, res, next) => {
@@ -65,28 +72,25 @@ blogPostRouter.post("/",  async (req, res, next) => {
 // Post picture/cover to blog post 
 blogPostRouter.post(
 "/:id/cover",
-upload.single("cover"),
+multer({ storage: cloudinaryStorage }).single("cover"),
 async (req, res, next) => {
   try {
-    const extention = path.extname(req.file.originalname);
-    const fıleName = req.params.id + extention;
-  
+
     if (req.file) {
-      await db.savePostImg(fıleName, req.file.buffer);
       
       const posts = await db.getBlogs();
       
       const post = posts.find((p) => p.id === req.params.id);
       const postArray = posts.filter((p) => p.id !== req.params.id);
       
-      const converUrl = `http://localhost:3001/img/post/${req.params.id}${extention}`;
-      post.cover = converUrl;
+      
+      post.cover = req.file.path;
     
 
       postArray.push(post);
 
       await db.writeBlogs(postArray);
-      res.send(post);
+      res.send("Image uploaded on Cloudinary");
     } else {
       console.log(req.file.buffer);
     }
@@ -95,6 +99,15 @@ async (req, res, next) => {
     next(error);
   }
 });
+
+// blogPostRouter.post("/uploadCloudinary", multer({ storage: cloudinaryStorage }).single("cover"), async (req, res, next) => {
+//   try {
+//     console.log(req.file)
+//     res.send("Image uploaded on Cloudinary")
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 
   // To delete blog post
   blogPostRouter.delete("/:id", async (req, res, next) => {
