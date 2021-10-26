@@ -7,6 +7,8 @@ import * as db from "../../lib/db.js";
 import path from "path";
 import multer from "multer";
 import { nextTick } from "process";
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import { v2 as cloudinary } from "cloudinary"
 
 const upload = multer();
 
