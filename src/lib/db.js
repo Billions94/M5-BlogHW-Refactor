@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import { dirname, join, } from 'path'
 import path from "path"
 
-const { readJSON, writeJSON, writeFile} = fs 
+const { readJSON, writeJSON, writeFile, createReadStream } = fs 
 
 export const dataFolderPath = join(dirname(fileURLToPath(import.meta.url)), '../datas')
 
@@ -12,8 +12,8 @@ console.log(publicFolderPath)
 
 
 
-const blogsJSONPath = join(dataFolderPath, 'post.json')
-const authorJSONPath = join(dataFolderPath, 'authors.json')
+export const blogsJSONPath = join(dataFolderPath, 'post.json')
+export const authorJSONPath = join(dataFolderPath, 'authors.json')
 console.log(blogsJSONPath)
 
 export const getBlogs = () => readJSON(blogsJSONPath)
@@ -23,6 +23,8 @@ export const getAuthors = () => readJSON(authorJSONPath)
 export const writeAuthors = content => writeJSON(authorJSONPath, content)
 
 export const savePostImg = (fileName, contentAsBuffer) => writeFile(join(publicFolderPath, fileName), contentAsBuffer)
+
+export const getBlogsReadableStream = () => createReadStream(blogsJSONPath)
 
 
 
