@@ -22,7 +22,7 @@ const fetchIamgeBuffer = async (image) => {
 };
 
 export const getPDFReadableStream = async (data) => {
-  let imagePart = {};
+  let imagePath = {};
   if (data.cover) {
     let imageBufferArray = await fetchIamgeBuffer(data.cover);
     console.log(imageBufferArray);
@@ -37,12 +37,12 @@ export const getPDFReadableStream = async (data) => {
     const extension = extname(fileName);
     const base64Pdf = `data:image/${extension};base64,${base64String}`;
 
-    imagePart = { image: base64Pdf, width: 500, margin: [0, 0, 0, 40] };
+    imagePath = { image: base64Pdf, width: 500, margin: [0, 0, 0, 40] };
   }
 
   const docDefinition = {
     content: [
-      imagePart,
+       imagePath,
       { text: data.id, fontSize: 20, bold: true, margin: [0, 0, 0, 40] },
       { text: data.title, fontSize: 20, bold: true, margin: [0, 0, 0, 40] },
       { text: data.category, fontSize: 20, bold: true, margin: [0, 0, 0, 40] },
