@@ -5,17 +5,28 @@ export const getPDFReadableStream = (data) => {
     Helvetica: {
       normal: "Helvetica",
       bold: "Helvetica-Bold",
-      // italics: "fonts/Roboto-Italic.ttf",
-      // bolditalics: "fonts/Roboto-MediumItalic.ttf",
     },
   }
 
   const printer = new PdfPrinter(fonts)
 
   const docDefinition = {
-    content: [ `${data.title}`
- 
-
+    content: [ 
+        { 
+            text: `${data.id}`,
+        },
+        { 
+            text: `${data.author.name}`,
+        },
+        { 
+            text: `${data.title}`,
+        },
+        { 
+            text: `${data.category}`,
+        },
+        { 
+            text: `${data.content}`,
+        },
   ],
     defaultStyle: {
       font: "Helvetica",
