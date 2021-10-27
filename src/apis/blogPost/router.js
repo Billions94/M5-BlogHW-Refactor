@@ -51,14 +51,20 @@ blogPostRouter.get("/:id/downloadPDF", async(req, res, next) => {
     const data = await db.getBlogs()
     const singleBlogPost = data.find(b => b.id === req.params.id)
 
-    res.setHeader("Content-Disposition", `attachment; filename=${singleBlogPost.id}.pdf`)// This header tells the browser to do not open the file, but to download it
+    if(!singleBlogPost){
+      res
+      .status(404)
+      .send({ message: `blog with ${req.params.id} is not found!` });
+    } else {
+      res.setHeader("Content-Disposition", `attachment; filename=${singleBlogPost.id}.pdf`)// This header tells the browser to do not open the file, but to download it
 
-    const source = getPDFReadableStream(singleBlogPost) // PDF READABLE STREAM
-    const destination = res
-
-    pipeline(source, destination, err => {
-      if (err) next(err)
-    })
+      const source = await getPDFReadableStream(singleBlogPost) // PDF READABLE STREAM
+      const destination = res
+  
+      pipeline(source, destination, err => {
+        if (err) next(err)
+      })
+    }
   } catch (error) {
     next(error)
   }
