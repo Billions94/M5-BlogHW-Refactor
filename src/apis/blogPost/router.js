@@ -4,11 +4,13 @@ import createHttpError from "http-errors";
 import { blogsValidation } from "./validation.js";
 import { body, validationResult } from "express-validator";
 import * as db from "../../lib/db.js";
+import {getPDFReadableStream} from "../../lib/pdftools.js"
 import path from "path";
 import multer from "multer";
 import { nextTick } from "process";
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
+import { pipeline } from "stream"
 
 const upload = multer();
 
@@ -19,6 +21,47 @@ const cloudinaryStorage = new CloudinaryStorage({
   params: {
     folder: "alex-blogs",
   },
+})
+
+
+//**********************************************STREAMING CONTENT ***************************************/
+
+blogPostRouter.get("/downloadJSON", async (req, res, next) => {
+  try {
+    // SOURCE (file on disk, request, ....) --> DESTINATION (file on disk, terminal, response...)
+
+    // In this example we are going to have: SOURCE (file on disk --> books.json) --> DESTINATION (response)
+
+    res.setHeader("Content-Disposition", "attachment; filename=post.json") // This header tells the browser to do not open the file, but to download it
+
+    const source = db.getBlogsReadableStream()
+    // const transform = createGzip()
+    const destination = res
+
+    pipeline(source, destination, err => {
+      if (err) next(err)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+blogPostRouter.get("/:id/downloadPDF", async(req, res, next) => {
+  try {
+    const data = await db.getBlogs()
+    const singleBlogPost = data.find(b => b.id === req.params.id)
+
+    res.setHeader("Content-Disposition", `attachment; filename=${singleBlogPost.id}.pdf`)// This header tells the browser to do not open the file, but to download it
+
+    const source = getPDFReadableStream(singleBlogPost) // PDF READABLE STREAM
+    const destination = res
+
+    pipeline(source, destination, err => {
+      if (err) next(err)
+    })
+  } catch (error) {
+    next(error)
+  }
 })
 
 // ******************************BLOG SECTION WITH IMAGE UPLOAD*********************
@@ -33,7 +76,7 @@ blogPostRouter.get("/", async (req, res, next) => {
   }
 });
 
-// To get a single blog post with id
+//To get a single blog post with id
 blogPostRouter.get("/:id", async (req, res, next) => {
   try {
     const blogPost = await db.getBlogById(req.params.id);
@@ -217,7 +260,6 @@ blogPostRouter.delete("/:postId/comments/:commentId", async(req, res, next) => {
     next(error)
   }
 })
-
 
 
 
