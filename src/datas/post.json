@@ -1,1 +1,16 @@
-[{"id":"pluwd1lzzkv8kaie1","category":"pixel","title":"Harley61","cover":"https://res.cloudinary.com/the-tribe/image/upload/v1635405110/alex-blogs/u8hvxmsb3mykewhvpojy.jpg","readTime":{"value":"5","unit":"minute"},"comments":[],"author":{"name":"Marjory.Feest98","avatar":"https://cdn.fakercloud.com/avatars/stefanotirloni_128.jpg"},"content":"","createdAt":"2021-10-26T20:49:06.457Z"}]
+[
+  {
+    "id": "pluwd1lzzkv8kaie1",
+    "category": "pixel",
+    "title": "Harley61",
+    "cover": "https://res.cloudinary.com/the-tribe/image/upload/v1635405110/alex-blogs/u8hvxmsb3mykewhvpojy.jpg",
+    "readTime": { "value": "5", "unit": "minute" },
+    "comments": [],
+    "author": {
+      "name": "Marjory.Feest98",
+      "avatar": "https://cdn.fakercloud.com/avatars/stefanotirloni_128.jpg"
+    },
+    "content": "",
+    "createdAt": "2021-10-26T20:49:06.457Z"
+  }
+]
