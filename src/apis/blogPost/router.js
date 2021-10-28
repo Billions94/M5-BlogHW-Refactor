@@ -4,12 +4,13 @@ import createHttpError from "http-errors";
 import { blogsValidation } from "./validation.js";
 import { body, validationResult } from "express-validator";
 import * as db from "../../lib/db.js";
-import {getPDFReadableStream} from "../../lib/pdftools.js"
+import {getPDFReadableStream} from "../../lib/pdfTools.js"
 import multer from "multer";
 import json2csv from "json2csv"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
 import { pipeline } from "stream"
+import { sendRegistrationEmail } from "../../lib/emailTools.js"
 
 const upload = multer();
 
@@ -51,10 +52,11 @@ blogPostRouter.get("/downloadCSV", async (req, res, next) => {
 
     // In this example we are going to have: SOURCE (file on disk --> books.json) --> DESTINATION (response)
 
-    res.setHeader("Content-Disposition", "attachment; filename=post.json") // This header tells the browser to do not open the file, but to download it
+    res.setHeader("Content-Disposition", "attachment; filename=post.csv") // This header tells the browser to do not open the file, but to download it
 
     const source = db.getBlogsReadableStream()
-    const transform = json2csv.Transform({ fields: ["id", "title", "category"] })
+   
+    const transform = new json2csv.Transform({ fields: ["author.name"] })
     const destination = res
 
     pipeline(source, transform, destination, err => {
@@ -283,6 +285,22 @@ blogPostRouter.delete("/:postId/comments/:commentId", async(req, res, next) => {
   }
 })
 
+
+blogPostRouter.post("/register", async (req, res, next) => {
+  try {
+    // 1. Receive email address via req.body
+    const { email } = req.body
+
+    // 2. Send email on that address
+    await sendRegistrationEmail(email)
+
+    // 3. Send ok
+    res.send("ok")
+  } catch (error) {
+    res.status(400).send(error.message)
+   // next(error)
+  }
+})
 
 
 
