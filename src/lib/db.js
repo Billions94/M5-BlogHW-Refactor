@@ -1,7 +1,6 @@
 import fs from 'fs-extra'
 import { fileURLToPath } from "url";
 import { dirname, join, } from 'path'
-import path from "path"
 
 const { readJSON, writeJSON, writeFile, createReadStream } = fs 
 

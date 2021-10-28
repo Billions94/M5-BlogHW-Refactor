@@ -5,7 +5,6 @@ import { blogsValidation } from "./validation.js";
 import { body, validationResult } from "express-validator";
 import * as db from "../../lib/db.js";
 import {getPDFReadableStream} from "../../lib/pdftools.js"
-import path from "path";
 import multer from "multer";
 import { nextTick } from "process";
 import { CloudinaryStorage } from "multer-storage-cloudinary"
@@ -134,9 +133,6 @@ async (req, res, next) => {
       post.cover = req.file.path;
 
       const postArray = posts.filter((p) => p.id !== req.params.id);
-      
-      
-    
 
       postArray.push(post);
 
