@@ -1,3 +1,5 @@
+//   **********************        CODE BY EJIROGHENE     ***********************     //
+
 import express from "express";
 import cors from "cors";
 import listEndpoints from "express-list-endpoints";
@@ -47,3 +49,5 @@ console.table(listEndpoints(server));
 server.listen(port, () => {
   console.log("listening on port", port);
 });
+
+//   **********************        CODE BY EJIROGHENE     ***********************     //

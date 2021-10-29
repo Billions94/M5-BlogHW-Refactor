@@ -1,3 +1,5 @@
+//   **********************        CODE BY EJIROGHENE     ***********************     //
+
 import fs from 'fs-extra'
 import { fileURLToPath } from "url";
 import { dirname, join, } from 'path'
@@ -15,23 +17,26 @@ export const blogsJSONPath = join(dataFolderPath, 'post.json')
 export const authorJSONPath = join(dataFolderPath, 'authors.json')
 console.log(blogsJSONPath)
 
+// READING THE PATH OF OUR JSON FILE ON THE DISK
 export const getBlogs = () => readJSON(blogsJSONPath)
+// WRITING BACK TO OUR JSON FILE ON THE DISK
 export const writeBlogs = content => writeJSON(blogsJSONPath, content)
-
+// READING THE PATH OF OUR JSON FILE ON THE DISK
 export const getAuthors = () => readJSON(authorJSONPath)
+// WRITING BACK TO OUR JSON FILE ON THE DISK
 export const writeAuthors = content => writeJSON(authorJSONPath, content)
-
+// WRITING TO OUR LOCAL PUBLIC FOLDER WHERE WE WANT TO SAVE THE IMAGE
 export const savePostImg = (fileName, contentAsBuffer) => writeFile(join(publicFolderPath, fileName), contentAsBuffer)
-
+// CREATING A READABLE STREAM FROM OUR JSON FILE ON THE DISK 
 export const getBlogsReadableStream = () => createReadStream(blogsJSONPath)
 
 
 
 export const getBlogById = async(id) => {
     try {
-        // read the blog array
+        // READ THE BLOG ARRAY
         const blogPost = await getBlogs();
-        // find a blog by id
+        // FIND A BLOG MY ID
         const blog = blogPost.find((blog) => blog.id === id);
         if(blog){
             console.log({blog});
@@ -46,9 +51,9 @@ export const getBlogById = async(id) => {
 
 export const getAuthorById = async(id) => {
     try {
-        // read the blog array
+         // READ THE BLOG ARRAY
         const authors = await getAuthors();
-        // find a blog by id
+        // FIND A BLOG MY ID
         const author = authors.find((a) => a.id === id);
         if(author){
             console.log({author});
@@ -66,10 +71,11 @@ export const getAuthorById = async(id) => {
 
 export const deleteBlog = async(id) => {
     try {
-        // delete blog by id
+        // DELETE A BLOG BY ID
         let blogPosts = await getBlogs()
         const blog = blogPosts.find((blog )=> blog.id === id);
         if(blog) {
+            // FILTERING BY ID AND RETURNING THE BLOGS LEFT
             blogPosts = blogPosts.filter(blog => blog.id !== id);
             // const filePath = path.join(publicFolderPath, blog.fileName)
             // console.log(filePath)
@@ -84,3 +90,4 @@ export const deleteBlog = async(id) => {
     }
 }
 
+//   **********************        CODE BY EJIROGHENE     ***********************     //
