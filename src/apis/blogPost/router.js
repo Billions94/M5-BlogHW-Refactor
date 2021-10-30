@@ -200,7 +200,7 @@ blogPostRouter.post(
       // RETREIVING THE FIELD WE NEED FOR THE COMMENTS
       const { text, userName } = req.body;
       // CREATING NEW COMMENT
-      const comment = { id: uniqid(), text, userName, createdAt: new Date() };
+      const comment = { id: uniqid(), text, userName, replies: [], createdAt: new Date() };
       // READING THE FILE FROM THE BLOG ARRAY(DISK)
       const blogs = await db.getBlogs();
       // FINDING THE INDEX OF THE COMMENT ARRAY IN THE BLOG POST ARRAY
@@ -262,6 +262,37 @@ blogPostRouter.put("/:postId/comments/:commentId", async(req, res, next) => {
   } catch (error) {
       console.log(error)
       next(error);
+  }
+})
+
+// POST A NEW COMMENT IN A PREVIOUS COMMENT
+
+blogPostRouter.post("/:id/comments/:commentId", async(req, res, next) => {
+  try {
+    const { text, userName } = req.body;
+
+    const reply = { 
+      id: uniqid(), 
+      text,
+      userName,
+      createdAt: new Date()
+    }
+
+    const posts = await db.getBlogs()
+
+    const post = posts.find(p => p.id === req.params.id)
+
+    const index = posts.findIndex(p => p.id === req.params.id)
+
+    const indexComment = post.comments.findIndex(c => c.id === req.params.commentId)
+
+    posts[index].comments[indexComment].replies.push(reply)
+    console.log(posts[index].comments[indexComment])
+
+    await db.writeBlogs(posts)
+    res.status(201).send(reply)
+  } catch (error) {
+    next(error)
   }
 })
 
